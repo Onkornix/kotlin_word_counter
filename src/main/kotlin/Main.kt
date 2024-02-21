@@ -1,9 +1,14 @@
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.writer
 
 
 fun main() {
     //print("complete path to file: ")
-    val reader = File("/home/dylan/Downloads/tfotr.txt").bufferedReader(charset = Charsets.UTF_8, bufferSize = 40_000)
+    val output = Files.createFile(Path.of("/Users/4JStudent/Documents/output.txt"))
+    val reader = File("/Users/4jStudent/Documents/readme.txt").bufferedReader(charset = Charsets.UTF_16, bufferSize = 40_000)
 
     val wordsMap: MutableMap<String, Int> = mutableMapOf()
 
@@ -29,8 +34,12 @@ fun main() {
 
         }
     }
+    val writer = output.writer(Charsets.UTF_16)
 
-
+    for (key in wordsMap.keys) {
+        println("$key : ${wordsMap.getValue(key)}")
+        //writer.appendLine()
+    }
 }
 
 fun removeSpecials(word: String): String {
