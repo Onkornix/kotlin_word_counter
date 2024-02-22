@@ -1,14 +1,12 @@
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.writer
 
 
 fun main() {
     //print("complete path to file: ")
-    val output = Files.createFile(Path.of("/Users/4JStudent/Documents/output.txt"))
-    val reader = File("/Users/4jStudent/Documents/readme.txt").bufferedReader(charset = Charsets.UTF_16, bufferSize = 40_000)
+
+    val reader = File("/Users/4jStudent/Documents/readme.txt").bufferedReader(charset = Charsets.UTF_8, bufferSize = 4_000)
 
     val wordsMap: MutableMap<String, Int> = mutableMapOf()
 
@@ -34,12 +32,48 @@ fun main() {
 
         }
     }
-    val writer = output.writer(Charsets.UTF_16)
+
+    println(makeOrderedMap(wordsMap))
+
+    /* FILE OUTPUT TEMPORARILY DISABLED
+    Files.deleteIfExists(Path.of("/Users/4JStudent/Documents/output.txt"))
+    Files.createFile(Path.of("/Users/4JStudent/Documents/output.txt"))
+
+    val output = File("/Users/4JStudent/Documents/output.txt")
+    val writer = output.bufferedWriter(Charsets.UTF_8,4_000)
+
 
     for (key in wordsMap.keys) {
-        println("$key : ${wordsMap.getValue(key)}")
-        //writer.appendLine()
+        //println("$key : ${wordsMap.getValue(key)}")
+        writer.write("$key : ${wordsMap.getValue(key)}")
+        writer.newLine()
     }
+    writer.flush()
+    writer.close()
+    */
+
+}
+
+fun makeOrderedMap(unorderedMap:MutableMap<String,Int>): MutableMap<Int,List<String>> {
+    val orderedMap: MutableMap<Int,List<String>> = mutableMapOf()
+    val indexList: MutableList<String> = mutableListOf()
+
+    var occurrence = 0 // occurrence means amount of times the word occurs in the file.
+    while (occurrence < unorderedMap.size) {
+
+        for (word in unorderedMap.keys) {
+            if (unorderedMap.getValue(word) == occurrence) {
+                indexList.add(word)
+            }
+        }
+        orderedMap[occurrence] = indexList
+        indexList.clear()
+        occurrence++
+    }
+
+    return orderedMap
+
+
 }
 
 fun removeSpecials(word: String): String {
