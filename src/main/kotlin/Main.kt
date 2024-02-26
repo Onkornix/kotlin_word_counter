@@ -5,18 +5,21 @@ import java.nio.file.Path
 
 fun main() {
 
-    Files.deleteIfExists(Path.of("/home/dylan/Documents/output.txt"))
-    Files.createFile(Path.of("/home/dylan/Documents/output.txt"))
+    val outputPath = "/Users/4JStudent/Documents/output.txt"
+    Files.deleteIfExists(Path.of(outputPath))
+    Files.createFile(Path.of(outputPath))
 
     val wordsMap: MutableMap<String, Int> = createWordsMap()
 
-    val output = File("/home/dylan/Documents/output.txt")
-    val writer = output.bufferedWriter()
+    val output = File(outputPath)
+    val writer = output.bufferedWriter(Charsets.ISO_8859_1)
 
     val minimumOccurrenceValue = wordsMap.values.minOf { it }
     var currentOccurrenceValue = wordsMap.values.maxOf { it } - 1
     val valuesThatExist: MutableList<Int> = getValuesThatExist(wordsMap)
     var index = valuesThatExist.size
+
+    writer.write("Words: ${doCounting(wordsMap)}\n")
 
     while (currentOccurrenceValue >= minimumOccurrenceValue) {
 
@@ -50,9 +53,14 @@ fun main() {
 fun createWordsMap() : MutableMap<String,Int>{
 
     print("Complete path to text file: ")
-    val input = readln()
+    var inputPath = readln()
 
-    val reader = File(input).bufferedReader()
+    while (!isInputFileOK(Path.of(inputPath))) {
+        print("Complete path to text file: ")
+        inputPath = readln()
+    }
+
+    val reader = File(inputPath).bufferedReader(Charsets.ISO_8859_1)
     val returnMap: MutableMap<String,Int> = mutableMapOf()
 
     reader.forEachLine {
@@ -78,9 +86,36 @@ fun createWordsMap() : MutableMap<String,Int>{
     return returnMap
 }
 
+fun doCounting(wordsMap: MutableMap<String,Int>) : Int {
+    var count = 0
+    for (word in wordsMap.keys) {
+        count += wordsMap.getValue(word)
+    }
+    return count
+}
+
+fun isInputFileOK(path: Path) : Boolean {
+    when {
+        Files.notExists(path) -> {
+            println("File does not exist")
+            return false
+        }
+        !Files.isRegularFile(path) -> {
+            println("File is not a regular file")
+            return false
+        }
+        !Files.isReadable(path) -> {
+            println("File is not readable")
+            return false
+        }
+    }
+    return true
+
+}
+
 fun removeSpecials(word: String): String {
     val specials = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=',
-        ',','.',':',';','?',']','[','}','{','/','\u0022','\u201c','\u201d', '\u0060','\u000d','\u000a')
+        ',','.',':',';','?',']','[','}','{','/','\\','\u0022','\u0027','\u201c','\u201d', '\u0060','\u000d','\u000a')
     return word.filter {
         it !in specials
     }
