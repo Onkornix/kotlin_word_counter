@@ -19,7 +19,8 @@ fun main() {
     val valuesThatExist: MutableList<Int> = getValuesThatExist(wordsMap)
     var index = valuesThatExist.size
 
-    writer.write("Words: ${doCounting(wordsMap)}\n")
+    writer.write("Words: ${doCounting(wordsMap)}\n" +
+            "Unique Words: ${wordsMap.keys.size}\n")
 
     while (currentOccurrenceValue >= minimumOccurrenceValue) {
 
@@ -34,7 +35,8 @@ fun main() {
 
         if (indexList.isNotEmpty()) {
 
-            writer.write("\n$currentOccurrenceValue ----- \n${indexList.joinToString("\n")}")
+            writer.write("\n$currentOccurrenceValue ----- ${percentOfMax(doCounting(wordsMap), currentOccurrenceValue)}%" +
+                    "\n${indexList.joinToString("\n")}")
             writer.newLine()
             writer.flush()
         }
@@ -48,12 +50,13 @@ fun main() {
 
     }
     writer.close()
+    println("written to $outputPath")
 }
 
 fun createWordsMap() : MutableMap<String,Int>{
 
     print("Complete path to text file: ")
-    var inputPath = readln()
+    var inputPath = "/Users/4JStudent/Documents/readme.txt"//readln()
 
     while (!isInputFileOK(Path.of(inputPath))) {
         print("Complete path to text file: ")
@@ -85,7 +88,10 @@ fun createWordsMap() : MutableMap<String,Int>{
     }
     return returnMap
 }
-
+fun percentOfMax(max: Int, current: Int) : Double{
+    val percent: Double = ((current.toDouble() / max.toDouble() ) * 100.0)
+    return percent
+}
 fun doCounting(wordsMap: MutableMap<String,Int>) : Int {
     var count = 0
     for (word in wordsMap.keys) {
