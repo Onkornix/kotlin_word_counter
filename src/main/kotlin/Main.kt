@@ -1,6 +1,9 @@
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.math.round
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 
 fun main() {
@@ -88,9 +91,12 @@ fun createWordsMap() : MutableMap<String,Int>{
     }
     return returnMap
 }
-fun percentOfMax(max: Int, current: Int) : Double{
-    val percent: Double = ((current.toDouble() / max.toDouble() ) * 100.0)
-    return percent
+fun percentOfMax(max: Int, current: Int) : String {
+    val percent = ((current.toDouble() / max.toDouble() ) * 100.0)
+    if ("%.2f".format(percent) == "0.00") {
+        return "0"
+    }
+    return "%.2f".format(percent)
 }
 fun doCounting(wordsMap: MutableMap<String,Int>) : Int {
     var count = 0
