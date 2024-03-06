@@ -1,12 +1,10 @@
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.math.round
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 
 fun main() {
+
 
     val outputPath = "/Users/4JStudent/Documents/output.txt"
     Files.deleteIfExists(Path.of(outputPath))
@@ -71,14 +69,14 @@ fun createWordsMap() : MutableMap<String,Int>{
 
     reader.forEachLine {
         val wordList: MutableList<String> = mutableListOf()
-        val charList: MutableList<Char> = mutableListOf()
+        val wordBuilder = StringBuilder()
 
         for (char in it) {
             if (char.isWhitespace()) {
-                wordList.add(removeSpecials(charList.joinToString("").lowercase()))
-                charList.clear()
+                wordList.add(removeSpecials(wordBuilder.toString()))
+                wordBuilder.clear()
             } else {
-                charList.add(char)
+                wordBuilder.append(char)
             }
         }
         for (word in wordList) {
