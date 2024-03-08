@@ -5,26 +5,30 @@ import java.nio.file.Path
 
 fun main() {
 
-    var input = "/Users/4JStudent/Documents/readme.txt" //readme()
-    val output = "/Users/4JStudent/Documents/output.txt"
+    print("Complete path to input text file: ")
+    var input = readln()
+    print("Complete path to desired output file: ")
+    var output = readln()
 
     while (!isInputFileOK(Path.of(input))) {
-        print("Complete path to text file: ")
+        print("Complete path to input file: ")
         input = readln()
     }
-    /*print("Run in interactive mode? [y/n]: ")
-    if (readln() == "y") {
-        interactive(input)
+    while (!isInputFileOK(Path.of(output))) {
+        print("Complete path to output file: ")
+        output = readln()
     }
 
-     */
-
-    interactive(input)
+    print("Run in interactive mode? [y/n]: ")
+    if (readln() == "y") {
+        interactive(input, output)
+    }
 
     val orderedMap: MutableMap<Int, List<String>> = createWordsMap(input)
 
     writeToFile(output,orderedMap)
 
+    println("Program complete")
 }
 fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
 
@@ -45,27 +49,26 @@ fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
     writer.close()
 }
 
-fun interactive(inputPath: String) {
+fun interactive(inputPath: String, outputPath: String) {
     var orderedMap = createWordsMap(inputPath)
     var interactiveMode = true
 
     while (interactiveMode) {
         print("> ")
-        val input = readln().lowercase()
+        val input = readln()
 
         val args: MutableList<String> = mutableListOf()
         val wordBuilder = StringBuilder()
 
-        for (char in input) {
+        for ((i, char) in input.withIndex()) {
             if (char.isWhitespace()) {
-                args.add(wordBuilder.toString().lowercase())
+                args.add(wordBuilder.toString())
                 wordBuilder.clear()
-            } else if (char == input[input.length - 1]) {
+            } else if (i == input.length - 1) {
                 wordBuilder.append(char)
-                args.add(wordBuilder.toString().lowercase())
+                args.add(wordBuilder.toString())
                 wordBuilder.clear()
             }
-
             else{
                 wordBuilder.append(char)
             }
@@ -74,14 +77,14 @@ fun interactive(inputPath: String) {
         when (args[0]) {
             "help" -> {
                 println("Interactive commands are:\n" +
-                        "find [word]                 : Prints given word's occurrence value\n" +
-                        "words-at [value] [sep]      : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
-                        "input [path/to/file]        : Runs the program on file given without exiting interactive mode\n" +
-                        "write                       : Continues program and writes to output file without exiting interactive mode\n" +
-                        "exit                        : Exits interactive mode and finishes program\n")
+                        "find [word]              : Prints given word's occurrence value\n" +
+                        "words [value] [sep]      : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
+                        "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
+                        "write                    : Continues program and writes to output file without exiting interactive mode\n" +
+                        "exit                     : Exits interactive mode and finishes program\n")
             }
             "find" -> {
-                val findWord = args[1]
+                val findWord = args[1].lowercase()
                 var isFound = false
                 for (occurrence in orderedMap.keys) {
                     if (findWord in orderedMap.getValue(occurrence)) {
@@ -96,9 +99,13 @@ fun interactive(inputPath: String) {
                 if (!isFound) println("Word not found.")
 
             }
-            "words-at" -> {
+            "words" -> {
                 val searchValue = args[1].toInt()
-                val sepChar = args[2]
+                var sepChar = ","
+                if (args.size >= 3) {
+                    sepChar = args[2]
+                }
+
                 var isFound = false
                 for (occurrence in orderedMap.keys) {
                     if (occurrence == searchValue) {
@@ -109,8 +116,34 @@ fun interactive(inputPath: String) {
                 }
                 if (!isFound) println("No words found")
             }
+            "input" -> {
+                var newInput = args[1]
+
+                while (!isInputFileOK(Path.of(newInput))) {
+                    print("Complete path to text file: ")
+                    newInput = readln()
+                }
+                orderedMap.clear()
+                orderedMap = createWordsMap(args[1])
+            }
+            "write" -> {
+                writeToFile(outputPath, orderedMap)
+            }
+            "exit" -> {
+                orderedMap.clear()
+                interactiveMode = false
+            }
+            else -> {
+                println("Interactive commands are:\n" +
+                        "find [word]              : Prints given word's occurrence value\n" +
+                        "words [value] [sep]      : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
+                        "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
+                        "write                    : Continues program and writes to output file without exiting interactive mode\n" +
+                        "exit                     : Exits interactive mode and finishes program\n")
+            }
         }
     }
+    println("bye bye")
 }
 
 fun orderWordsMap(wordsMap: MutableMap<String, Int>) : MutableMap<Int, List<String>>{
