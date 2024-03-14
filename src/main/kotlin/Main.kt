@@ -5,37 +5,36 @@ import java.nio.file.Path
 
 fun main() {
 
-    print("Complete path to input text file: ")
-    var input = readln()
-    print("Complete path to desired output file: ")
-    var output = readln()
-
+    //print("Complete path to input text file: ")
+    var input = "/Users/4JStudent/Documents/readme.txt"//readln()
     while (!isInputFileOK(Path.of(input))) {
         print("Complete path to input file: ")
         input = readln()
     }
+
+
+    //print("Complete path to desired output file: ")
+    var output = "/Users/4JStudent/Documents/output.txt"//readln()
     while (!isInputFileOK(Path.of(output))) {
         print("Complete path to output file: ")
         output = readln()
     }
 
     print("Run in interactive mode? [y/n]: ")
-    if (readln() == "y") {
+    val response = readln()
+    if (response == "y") {
         interactive(input, output)
+    } else {
+        val orderedMap: MutableMap<Int, List<String>> = createWordsMap(input)
+        writeToFile(output,orderedMap)
     }
-
-    val orderedMap: MutableMap<Int, List<String>> = createWordsMap(input)
-
-    writeToFile(output,orderedMap)
-
-    println("Program complete")
 }
 fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
 
     Files.deleteIfExists(Path.of(output))
     Files.createFile(Path.of(output))
 
-    val writer = File(output).bufferedWriter(Charsets.ISO_8859_1, 1024)
+    val writer = File(output).bufferedWriter(Charsets.UTF_8)
 
     writer.write("Total Words: ${getAmountOfWords(orderedMap)}\n" +
             "Unique Words: ${getUniqueWords(orderedMap)}")
@@ -47,104 +46,10 @@ fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
         writer.flush()
     }
     writer.close()
+    println("Successfully Written")
 }
 
-fun interactive(inputPath: String, outputPath: String) {
-    var orderedMap = createWordsMap(inputPath)
-    var interactiveMode = true
 
-    while (interactiveMode) {
-        print("> ")
-        val input = readln()
-
-        val args: MutableList<String> = mutableListOf()
-        val wordBuilder = StringBuilder()
-
-        for ((i, char) in input.withIndex()) {
-            if (char.isWhitespace()) {
-                args.add(wordBuilder.toString())
-                wordBuilder.clear()
-            } else if (i == input.length - 1) {
-                wordBuilder.append(char)
-                args.add(wordBuilder.toString())
-                wordBuilder.clear()
-            }
-            else{
-                wordBuilder.append(char)
-            }
-        }
-
-        when (args[0]) {
-            "help" -> {
-                println("Interactive commands are:\n" +
-                        "find [word]              : Prints given word's occurrence value\n" +
-                        "words [value] [sep]      : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
-                        "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
-                        "write                    : Continues program and writes to output file without exiting interactive mode\n" +
-                        "exit                     : Exits interactive mode and finishes program\n")
-            }
-            "find" -> {
-                val findWord = args[1].lowercase()
-                var isFound = false
-                for (occurrence in orderedMap.keys) {
-                    if (findWord in orderedMap.getValue(occurrence)) {
-                        println(occurrence)
-                        isFound = true
-                        break
-                    } else {
-                        continue
-                    }
-                }
-
-                if (!isFound) println("Word not found.")
-
-            }
-            "words" -> {
-                val searchValue = args[1].toInt()
-                var sepChar = ","
-                if (args.size >= 3) {
-                    sepChar = args[2]
-                }
-
-                var isFound = false
-                for (occurrence in orderedMap.keys) {
-                    if (occurrence == searchValue) {
-                        println(orderedMap.getValue(occurrence).joinToString("$sepChar "))
-                        isFound = true
-                        break
-                    }
-                }
-                if (!isFound) println("No words found")
-            }
-            "input" -> {
-                var newInput = args[1]
-
-                while (!isInputFileOK(Path.of(newInput))) {
-                    print("Complete path to text file: ")
-                    newInput = readln()
-                }
-                orderedMap.clear()
-                orderedMap = createWordsMap(args[1])
-            }
-            "write" -> {
-                writeToFile(outputPath, orderedMap)
-            }
-            "exit" -> {
-                orderedMap.clear()
-                interactiveMode = false
-            }
-            else -> {
-                println("Interactive commands are:\n" +
-                        "find [word]              : Prints given word's occurrence value\n" +
-                        "words [value] [sep]      : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
-                        "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
-                        "write                    : Continues program and writes to output file without exiting interactive mode\n" +
-                        "exit                     : Exits interactive mode and finishes program\n")
-            }
-        }
-    }
-    println("bye bye")
-}
 
 fun orderWordsMap(wordsMap: MutableMap<String, Int>) : MutableMap<Int, List<String>>{
     val returnMap: MutableMap<Int, List<String>> = mutableMapOf()
@@ -176,12 +81,12 @@ fun orderWordsMap(wordsMap: MutableMap<String, Int>) : MutableMap<Int, List<Stri
         currentOccurrenceValue = valuesThatExist[index]
 
     }
-
+    //println("Input Parsed")
     return returnMap
 }
 fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
 
-    val reader = File(inputPath).bufferedReader(Charsets.ISO_8859_1)
+    val reader = File(inputPath).bufferedReader(Charsets.UTF_8)
     val returnMap: MutableMap<String,Int> = mutableMapOf()
 
     reader.forEachLine {
@@ -260,4 +165,159 @@ fun getValuesThatExist(map:MutableMap<String,Int>): MutableList<Int> {
     }
     return returnList
 
+}
+
+enum class ResponseType {
+    HELP,
+    FIND,
+    WORDS,
+    INPUT,
+    WRITE,
+    EXIT,
+}
+class Interact(inputPath: String, outputPath: String) {
+
+    private var orderedMap = createWordsMap(inputPath)
+
+    private fun createMap(inputPath: String) {
+        orderedMap = createWordsMap(inputPath)
+    }
+    fun help() : String =
+            "Interactive commands are:\n" +
+            "help                     : Prints this help\n" +
+            "find [word]              : Prints given word's occurrence value\n" +
+            "words [value]            : Lists all words that occur [value]] amount of times. multiple words are separated with [sep] (warning: may be a lot of words)\n" +
+            "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
+            "write                    : Continues program and writes to output file without exiting interactive mode\n" +
+            "exit                     : Exits interactive mode and finishes program"
+    fun find(word: String) : String{
+
+        for (occurrence in orderedMap.keys) {
+            if (word in orderedMap.getValue(occurrence)) {
+                return occurrence.toString()
+            } else {
+                continue
+            }
+        }
+        return "Word not found"
+    }
+    fun words(searchValue: Int) : String {
+        for (occurrence in orderedMap.keys) {
+            if (occurrence == searchValue) {
+                return orderedMap.getValue(occurrence).joinToString(", ")
+
+            }
+        }
+        return "No words found"
+    }
+
+    fun input(pathToInput: String) {
+        var pathToInput = pathToInput
+        while (!isInputFileOK(Path.of(pathToInput))) {
+            print("Complete path to text file: ")
+            pathToInput = readln()
+        }
+        orderedMap.clear()
+        createMap(pathToInput)
+    }
+
+    fun write(outputPath: String) {
+        writeToFile(outputPath, orderedMap)
+    }
+}
+
+fun interactive(inputPath: String, outputPath: String) {
+    val interact = Interact(inputPath, outputPath)
+    var interactiveMode = true
+
+    while (interactiveMode) {
+        print("> ")
+        val input = readln()
+
+        val args: MutableList<String> = mutableListOf()
+        val wordBuilder = StringBuilder()
+
+        for ((i, char) in input.withIndex()) {
+            if (char.isWhitespace()) {
+                args.add(wordBuilder.toString())
+                wordBuilder.clear()
+            } else if (i == input.length - 1) {
+                wordBuilder.append(char)
+                args.add(wordBuilder.toString())
+                wordBuilder.clear()
+            }
+            else{
+                wordBuilder.append(char)
+            }
+        }
+        when {
+            args[0] in listOf("find", "words", "input", "write") && args.size < 2 -> {
+                println("not enough arguments. use `help` to learn syntax")
+                continue
+            }
+            args[0] == "words" && args[1].toIntOrNull() == null -> {
+                println("argument passed cannot parse to an integer. use `help` to learn syntax")
+                continue
+            }
+        }
+
+        val response = when (args[0]) {
+            "help" -> ResponseType.HELP
+            "find" -> ResponseType.FIND
+            "words" -> ResponseType.WORDS
+            "input" -> ResponseType.INPUT
+            "write" -> ResponseType.WRITE
+            "exit" -> ResponseType.EXIT
+            else -> ResponseType.HELP
+        }
+
+        when (response) {
+            ResponseType.HELP -> println(interact.help())
+            ResponseType.FIND -> println(interact.find(args[1]))
+            ResponseType.WORDS -> println(interact.words(args[1].toInt()))
+            ResponseType.INPUT -> interact.input(args[1])
+            ResponseType.WRITE -> interact.write(outputPath)
+            ResponseType.EXIT -> interactiveMode = false
+        }
+//        when (args[0]) {
+//            "words" -> {
+//                val searchValue = args[1].toInt()
+//                var sepChar = ","
+//                if (args.size >= 3) {
+//                    sepChar = args[2]
+//                }
+//
+//                var isFound = false
+//                for (occurrence in orderedMap.keys) {
+//                    if (occurrence == searchValue) {
+//                        println(orderedMap.getValue(occurrence).joinToString("$sepChar "))
+//                        isFound = true
+//                        break
+//                    }
+//                }
+//                if (!isFound) println("No words found")
+//            }
+//            "input" -> {
+//                var newInput = args[1]
+//
+//                while (!isInputFileOK(Path.of(newInput))) {
+//                    print("Complete path to text file: ")
+//                    newInput = readln()
+//                }
+//                orderedMap.clear()
+//                orderedMap = createWordsMap(args[1])
+//            }
+//            "write" -> {
+//                writeToFile(outputPath, orderedMap)
+//            }
+//            "exit" -> {
+//                orderedMap.clear()
+//                interactiveMode = false
+//            }
+//            else -> {
+//                println(helpText)
+//            }
+//        }
+    }
+    println("bye bye")
 }
