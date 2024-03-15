@@ -134,50 +134,51 @@ fun interactive(inputPath: String, outputPath: String) {
                 wordBuilder.append(char)
             }
         }
+
+        val arg1Enum = when (args[0]) {
+            "help" -> ArgType.HELP
+            "find" -> ArgType.FIND
+            "words" -> ArgType.WORDS
+            "input" -> ArgType.INPUT
+            "write" -> ArgType.WRITE
+            "index" -> ArgType.INDEX
+            "exit" -> ArgType.EXIT
+            else -> ArgType.HELP
+        }
+
         when {
-            args[0] in listOf("find", "words", "input") && args.size < 2 -> {
+            arg1Enum in listOf(ArgType.FIND, ArgType.WORDS, ArgType.INPUT) && args.size < 2 -> {
                 println("not enough arguments. use `help` to learn syntax")
                 continue
             }
-            args[0] == "index" && args.size < 3 -> {
+            arg1Enum == ArgType.INDEX && args.size < 3 -> {
                 println("not enough arguments. use `help` to learn syntax")
                 continue
             }
-            args[0] == "index" && (args[1].toIntOrNull() == null || args[2].toIntOrNull() == null) -> {
+            arg1Enum == ArgType.INDEX && (args[1].toIntOrNull() == null || args[2].toIntOrNull() == null) -> {
                 println("one or more arguments passed are not numbers. use `help` to learn syntax")
                 continue
             }
-            args[0] == "words" && args[1].toIntOrNull() == null -> {
+            arg1Enum == ArgType.WORDS && args[1].toIntOrNull() == null -> {
                 println("argument passed is not a number")
                 continue
             }
         }
 
-        val responseAsType = when (args[0]) {
-            "help" -> ResponseType.HELP
-            "find" -> ResponseType.FIND
-            "words" -> ResponseType.WORDS
-            "input" -> ResponseType.INPUT
-            "write" -> ResponseType.WRITE
-            "index" -> ResponseType.INDEX
-            "exit" -> ResponseType.EXIT
-            else -> ResponseType.HELP
-        }
-
-        when (responseAsType) {
-            ResponseType.HELP -> println(interact.help())
-            ResponseType.FIND -> println(interact.find(args[1]))
-            ResponseType.WORDS -> println(interact.words(args[1].toInt()))
-            ResponseType.INDEX -> interact.index(args[1].toInt() - 1 , args[2].toInt() - 1)
-            ResponseType.INPUT -> interact.input(args[1])
-            ResponseType.WRITE -> interact.write(outputPath)
-            ResponseType.EXIT -> interactiveMode = false
+        when (arg1Enum) {
+            ArgType.HELP -> println(interact.help())
+            ArgType.FIND -> println(interact.find(args[1]))
+            ArgType.WORDS -> println(interact.words(args[1].toInt()))
+            ArgType.INDEX -> interact.index(args[1].toInt() - 1 , args[2].toInt() - 1)
+            ArgType.INPUT -> interact.input(args[1])
+            ArgType.WRITE -> interact.write(outputPath)
+            ArgType.EXIT -> interactiveMode = false
         }
     }
     println("bye bye")
 }
 
-enum class ResponseType {
+enum class ArgType {
     HELP, FIND, WORDS, INPUT, WRITE, INDEX, EXIT,
 }
 class Interact(inputPath: String) {
@@ -193,9 +194,7 @@ class Interact(inputPath: String) {
             "help                     : Prints this help\n" +
             "find [word]              : Prints given word's occurrence value\n" +
             "words [value]            : Prints all words that occur [value] amount of times (warning: may be a lot of words)\n" +
-            "index [start] [stop]     : Prints as if it were to the output file, but only for the words that populate the\n" +
-            "                         | index [start] to [stop]. ex: `index 1 10` will print all the collections of words for\n" +
-            "                         | for the 1st highest occurrence value down to the 10th highest.\n" +
+            "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n"+
             "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
             "write                    : Writes to output file without exiting interactive mode\n" +
             "exit                     : Exits interactive mode and does not write to output file"
