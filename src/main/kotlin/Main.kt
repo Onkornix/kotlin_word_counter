@@ -56,7 +56,7 @@ fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
 class WordMap{
     val input = File("/Users/4JStudent/Documents/readme.txt")
 
-    val bigMap = mutableMapOf<Int, List<String>>()
+    private val bigMap = mutableMapOf<Int, MutableList<String>>()
     private val bufReader = input.bufferedReader()
     // read line.
     // add words to a small map
@@ -89,19 +89,37 @@ class WordMap{
     }
 
     private fun addToMap(smallMap: MutableMap<String, Int>) {
+       if (bigMap.keys.isEmpty()) {
+            for (word in smallMap.keys) {
+                if (!bigMap.keys.contains(smallMap.getValue(word))) bigMap[smallMap.getValue(word)] = mutableListOf(word)
+                else bigMap.getValue(smallMap.getValue(word)).add(word)
+            }
+           return
+        }
+
         // go through unordered map
         // check words in unordered map against words in ordered map
         // if word is found in ordered map change the key by x amount
+        for (word in smallMap.keys) {
+            for (v in bigMap.keys) {
+                val valList = bigMap.getValue(v)
+                if (valList.contains(word)) {
+                    valList.remove(word)
+                    if (!bigMap.keys.contains(smallMap.getValue(word) + v)) bigMap[smallMap.getValue(word) + v] = mutableListOf(word)
+                    else bigMap.getValue(smallMap.getValue(word) + v).add(word)
+                }
+            }
+        }
+        println(bigMap)
 
 
     }
     fun makeMap() {
-        for (x in 0..5) {
+        for (x in 0..20) {
             val lineList = readLineToList()
             val unord = smallUnordMap(lineList)
             addToMap(unord)
         }
-        println(input.length())
 
     }
 
@@ -224,9 +242,9 @@ fun interactive(inputPath: String, outputPath: String) {
         }
 
         when (arg1Enum) {
-            ArgType.HELP -> println(interact.help())
-            ArgType.FIND -> println(interact.find(args[1]))
-            ArgType.WORDS -> println(interact.words(args[1].toInt()))
+            ArgType.HELP -> interact.help()
+            ArgType.FIND -> interact.find(args[1])
+            ArgType.WORDS -> interact.words(args[1].toInt())
             ArgType.INDEX -> interact.index(args[1].toInt() - 1 , args[2].toInt() - 1)
             ArgType.INPUT -> interact.input(args[1])
             ArgType.WRITE -> interact.write(outputPath)
@@ -247,34 +265,38 @@ class Interact(inputPath: String) {
         wordMap = createWordsMap(inputPath)
     }
 
-    fun help() : String =
+    fun help() {
+        println(
             "Interactive commands are:\n" +
             "help                     : Prints this help\n" +
             "find [word]              : Prints given word's occurrence value\n" +
             "words [value]            : Prints all words that occur [value] amount of times (warning: may be a lot of words)\n" +
-            "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n"+
+            "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n" +
             "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
             "write                    : Writes to output file without exiting interactive mode\n" +
             "exit                     : Exits interactive mode and does not write to output file"
-    fun find(word: String) : String{
+        )
+
+    }
+    fun find(word: String) {
 
         for (occurrence in wordMap.keys) {
             if (word in wordMap.getValue(occurrence)) {
-                return occurrence.toString()
+                print(occurrence.toString())
             } else {
                 continue
             }
         }
-        return "Word not found"
+        print("Word not found")
     }
-    fun words(searchValue: Int) : String {
+    fun words(searchValue: Int){
         for (occurrence in wordMap.keys) {
             if (occurrence == searchValue) {
-                return wordMap.getValue(occurrence).joinToString(", ")
+                print(wordMap.getValue(occurrence).joinToString(", "))
 
             }
         }
-        return "No words found"
+        print("No words found")
     }
 
     fun input(pathToInput: String) {
