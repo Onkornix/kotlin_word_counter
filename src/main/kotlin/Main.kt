@@ -5,6 +5,10 @@ import java.nio.file.Path
 
 fun main() {
 
+    val m = WordMap()
+    m.makeMap()
+
+
     //print("Complete path to input text file: ")
     var input = "/home/dylan/Documents/tfotr.txt"//readln()
     while (!isInputFileOK(Path.of(input))) {
@@ -47,6 +51,60 @@ fun writeToFile(output: String, orderedMap: MutableMap<Int, List<String>>) {
     }
     writer.close()
     println("Successfully Written")
+}
+
+class WordMap{
+    val input = File("/Users/4JStudent/Documents/readme.txt")
+
+    val bigMap = mutableMapOf<Int, List<String>>()
+    private val bufReader = input.bufferedReader()
+    // read line.
+    // add words to a small map
+    // add words to full map
+    // next line
+    private fun readLineToList(): MutableList<String> {
+        val line = bufReader.readLine()
+        val wordList: MutableList<String> = mutableListOf()
+        val wordBuilder = StringBuilder()
+
+        for (char in line) {
+            if (char.isWhitespace() || char in listOf('\u0020', '\n', "")) {
+                wordList.add(removeSpecials(wordBuilder.toString().lowercase()))
+                wordBuilder.clear()
+            } else {
+                wordBuilder.append(char)
+            }
+        }
+        return wordList
+    }
+    private fun smallUnordMap(wordList: MutableList<String>) : MutableMap<String, Int>{
+        val smallMap: MutableMap<String, Int> = mutableMapOf()
+        for (word in wordList) {
+            if (word in smallMap.keys) {
+                smallMap[word] = (smallMap.getValue(word) + 1)
+            }
+            smallMap.putIfAbsent(word, 1)
+        }
+        return smallMap
+    }
+
+    private fun addToMap(smallMap: MutableMap<String, Int>) {
+        // go through unordered map
+        // check words in unordered map against words in ordered map
+        // if word is found in ordered map change the key by x amount
+
+
+    }
+    fun makeMap() {
+        for (x in 0..5) {
+            val lineList = readLineToList()
+            val unord = smallUnordMap(lineList)
+            addToMap(unord)
+        }
+        println(input.length())
+
+    }
+
 }
 
 fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
