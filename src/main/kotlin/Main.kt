@@ -3,24 +3,23 @@ import java.io.BufferedWriter
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-
 fun main() {
     print("Complete path to input text file: ")
-    var input = "/Users/4JStudent/Documents/readme.txt"//readln()
+    var input = "/Users/4JStudent/Documents/Paradise.txt"//readln()
     while (!isInputFileOK(Path.of(input))) {
         print("Complete path to input file: ")
         input = readln()
     }
     print("Complete path to desired output file: ")
     val output = "/Users/4JStudent/Documents/output.txt"//readln()
-    val orderedMap = createWordsMap(input)
+    val occurrenceToWordsMap = createWordsMap(input)
     var totalWordsCount = 0
-    for (occurrence in orderedMap.keys) {
-        totalWordsCount += (orderedMap.getValue(occurrence).size * occurrence)
+    for (occurrence in occurrenceToWordsMap.keys) {
+        totalWordsCount += (occurrenceToWordsMap.getValue(occurrence).size * occurrence)
     }
     var uniqueWordsCount = 0
-    for (key in orderedMap.keys) {
-        uniqueWordsCount += orderedMap.getValue(key).size
+    for (key in occurrenceToWordsMap.keys) {
+        uniqueWordsCount += occurrenceToWordsMap.getValue(key).size
     }
     if (File(output).exists()) {
         File(output).delete()
@@ -32,8 +31,8 @@ fun main() {
     writer.write("Unique Words: $uniqueWordsCount")
     writer.newLine()
     writer.newLine()
-    for (occurrence in orderedMap.keys) {
-        writer.write("$occurrence: \n${orderedMap.getValue(occurrence).joinToString("\n")}\n\n")
+    for (occurrence in occurrenceToWordsMap.keys) {
+        writer.write("$occurrence: \n${occurrenceToWordsMap.getValue(occurrence).joinToString("\n")}\n\n")
         writer.flush()
     }
     writer.close()
@@ -90,7 +89,6 @@ fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
             val occurrenceValue = wordToOccurrenceMap.getValue(word)
             if (currentOccurrenceValue in valuesThatExist && occurrenceValue == currentOccurrenceValue) {
                 indexList.add(word)
-                //valuesThatExist.remove(currentOccurrenceValue)
             }
         }
         if (indexList.isNotEmpty()) occurrenceToWordsMap[currentOccurrenceValue] = indexList
