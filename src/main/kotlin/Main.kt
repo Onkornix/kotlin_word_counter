@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 fun main() {
     print("Complete path to input text file: ")
-    var input = "/Users/4JStudent/Documents/Paradise.txt"//readln()
+    var input = "/Users/4JStudent/Documents/text.txt"//readln()
     while (!isInputFileOK(Path.of(input))) {
         print("Complete path to input file: ")
         input = readln()
@@ -32,7 +32,14 @@ fun main() {
     writer.newLine()
     writer.newLine()
     for (occurrence in occurrenceToWordsMap.keys) {
-        writer.write("$occurrence: \n${occurrenceToWordsMap.getValue(occurrence).joinToString("\n")}\n\n")
+        writer.write("$occurrence: (${occurrenceToWordsMap.getValue(occurrence).size})")
+        writer.newLine()
+        writer.write(occurrenceToWordsMap
+            .getValue(occurrence)
+            .sorted()
+            .joinToString("\n"))
+        writer.newLine()
+        writer.newLine()
         writer.flush()
     }
     writer.close()
@@ -41,6 +48,7 @@ fun main() {
 fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
     val bufReader = BufferedReader((File(inputPath).reader()))
     val wordToOccurrenceMap: MutableMap<String,Int> = mutableMapOf()
+    val specialCharacters = listOf('!',',','.',':',';','?','\\','\u0022','\u0027','\u201c','\u201d', '\u0060','\u000d','\u000a','\u0009', '\u00a0', '\u0020')
     var line: String?
     while (
         run {
@@ -50,14 +58,20 @@ fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
         val lineContents: String = line!!
         val wordList: MutableList<String> = mutableListOf()
         val wordBuilder = StringBuilder()
-        for (char in lineContents) {
+        for ((index, char) in lineContents.withIndex()) {
             if (char.isWhitespace() || char in listOf('\u0020', '\n', "")) {
-                wordList.add(removeSpecials(wordBuilder.toString().lowercase()))
+                wordList.add(wordBuilder
+                    .toString()
+                    .lowercase()
+                    .filter { it !in specialCharacters })
                 wordBuilder.clear()
             }
-            else if (char == lineContents.last()) {
+            else if (index == lineContents.length - 1) {
                 wordBuilder.append(char)
-                wordList.add(removeSpecials(wordBuilder.toString().lowercase()))
+                wordList.add(wordBuilder
+                    .toString()
+                    .lowercase()
+                    .filter { it !in specialCharacters })
                 wordBuilder.clear()
             }
             else {
@@ -70,7 +84,6 @@ fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>>{
                 wordToOccurrenceMap[word] = (wordToOccurrenceMap.getValue(word) + 1)
             }
             wordToOccurrenceMap.putIfAbsent(word, 1)
-
         }
     }
     val valuesThatExist: MutableList<Int> = mutableListOf()
@@ -115,11 +128,4 @@ fun isInputFileOK(path: Path) : Boolean {
         }
     }
     return true
-}
-fun removeSpecials(word: String): String {
-    return word.filter {
-        it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=',
-            ',','.',':',';','?',']','[','}','{','/','\\','\u0022','\u0027','\u201c','\u201d', '\u0060','\u000d','\u000a','\u0009',
-            '\u00a0', '\u0020')
-    }
 }
