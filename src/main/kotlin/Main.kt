@@ -43,6 +43,7 @@ fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>> {
             line = bufReader.readLine()
             line
         } != null) {
+
         val lineIterator = line!!
             .lowercase()
             .filter { it !in specials }
