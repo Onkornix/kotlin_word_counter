@@ -69,22 +69,21 @@ fun createWordsMap(inputPath: String) : MutableMap<Int, List<String>> {
     }
 
     val groupedMap: MutableMap<Int, List<String>> = mutableMapOf()
-    val minimumOccurrenceValue = ungroupedMap.values.minOf { it }
-    var currentOccurrenceValue = ungroupedMap.values.maxOf { it } - 1
+    var currentOccurrenceValue = ungroupedMap.values.max() - 1
     var index = valuesThatExist.size
-    while (currentOccurrenceValue >= minimumOccurrenceValue) {
-        val listAtIndex: MutableList<String> = mutableListOf()
+    while (currentOccurrenceValue >= ungroupedMap.values.max()) {
+        val wordInGroup: MutableList<String> = mutableListOf()
         for (word in ungroupedMap.keys) {
             if (currentOccurrenceValue in valuesThatExist
                 && ungroupedMap.getValue(word) == currentOccurrenceValue) {
-                listAtIndex.add(word)
+                wordInGroup.add(word)
             }
         }
-        if (listAtIndex.isNotEmpty()) groupedMap[currentOccurrenceValue] = listAtIndex
+        if (wordInGroup.isNotEmpty()) groupedMap[currentOccurrenceValue] = wordInGroup
         if (index == 0) break
         index--
         currentOccurrenceValue = valuesThatExist[index]
-        val forRemoval: MutableList<String> =  mutableListOf()
+        val forRemoval: MutableList<String> = mutableListOf()
         for (word in ungroupedMap.keys) {
             if (ungroupedMap.getValue(word) > currentOccurrenceValue) forRemoval.add(word)
         }
