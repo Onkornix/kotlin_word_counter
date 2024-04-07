@@ -3,14 +3,14 @@
 
 This is my create task (aka final project) for the AP Computer Science Principles class at my high school.
 
-### What does it do? (Core Version) [unmerged]
+### Core Version
 
 1. Reads a plain text file (.txt) line by line
 2. Counts how many times each word occurs
 3. Groups words together based on how many times they occur
 4. Writes the numerically ordered word groups to another text file
 
-### Full Version [WIP]
+### Full Version
 Same core functionality as mentioned before, but with some extra stuff:
 - **Interactive mode:** call functions to view data related to the ordered words real time
   - Find:  prints the amount of times a word occurs (if at all)
