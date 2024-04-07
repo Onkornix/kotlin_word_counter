@@ -29,6 +29,6 @@ learning it as an entire class would be great practice. It was, and I've definit
 knowing how to program an FRC robot. Suffice to say I ended up not being much help to the team that season. 
 
 I do kind of wish I had decided to learn a programming language that's a bit more useful, instead of one for high school robotics and android apps... 
-So I re-wrote this project in Rust! (well i'm currently doing that). Mainly because I think that learning something more technical and difficult, 
+So I [re-wrote this project in Rust!](https://github.com/Onkornix/rust_word_counter) (well i'm currently doing that). Mainly because I think that learning something more technical and difficult, 
 a low level systems programming language for example, will help me stand out more in the job market in the future. Except I currently plan on doing 
 hardware or network engineering as a college major, while learning Rust and making/contributing to projects as a hobby. But I guess I'll see where life takes me!
