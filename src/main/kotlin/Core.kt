@@ -2,7 +2,7 @@ import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 
-class Worderer {
+class WordererCore {
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
     private val inputAndOutputPaths = readln().split(' ')
@@ -96,5 +96,5 @@ class Worderer {
 
 fun main() {
     print("complete paths to input and then output files (separated by a space): ")
-    Worderer()
+    WordererCore()
 }
