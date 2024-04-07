@@ -4,6 +4,7 @@
 This is my create task (aka final project) for the AP Computer Science Principles class at my high school.
 
 ### Core Version
+It's got all of the things that the AP people wanna see: input, collecton type, function, function call, algorithm, output
 
 1. Reads a plain text file (.txt) line by line
 2. Counts how many times each word occurs
