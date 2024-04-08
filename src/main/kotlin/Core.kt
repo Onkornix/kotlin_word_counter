@@ -10,21 +10,24 @@ class WordererCore {
     private val outputWriter = BufferedWriter(File(inputAndOutputPaths[1]).writer())
 
     init {
-        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
-        for (line in inputReader.lines().iterator()) {
-            if (line != null) {
-                addToUngroupedMap(line
-                    .lowercase()
-                    .filter { it !in specialCharacters }
-                    .split(' ')
-                    .iterator())
-            }
-        }
+        populateUnorderedMap()
         createGroupedMap()
         writeToOutput()
     }
 
-    private fun addToUngroupedMap(line: Iterator<String>) {
+    private fun populateUnorderedMap() {
+        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\',"<",">")
+        val lineIterator = inputReader.lines().iterator()
+        while (lineIterator.hasNext()) {
+            addToUngroupedMap(lineIterator.next()
+                .lowercase()
+                .filter { it !in specialCharacters }
+                .split(' '))
+        }
+        inputReader.close()
+    }
+
+    private fun addToUngroupedMap(line: List<String>) {
         for (word in line) {
             if (word.isBlank()) continue
             if (word in ungroupedMap.keys) {
@@ -36,13 +39,13 @@ class WordererCore {
 
     private fun createGroupedMap() {
         val valuesThatExist = run {
-            val valuesThatExist: MutableList<Int> = mutableListOf()
+            val createValuesThatExist: MutableList<Int> = mutableListOf()
             for (number in ungroupedMap.values.sorted()) {
-                if (number !in valuesThatExist) {
-                    valuesThatExist.add(number)
+                if (number !in createValuesThatExist) {
+                    createValuesThatExist.add(number)
                 }
             }
-            valuesThatExist
+            createValuesThatExist
         }
 
         var currentOccurrenceValue = ungroupedMap.values.max() - 1
