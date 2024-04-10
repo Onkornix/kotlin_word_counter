@@ -246,7 +246,9 @@ class Interact() {
     }
     private fun index(start: Int, stop: Int) {
         val allValues: MutableList<Int> = mutableListOf(0)
-        for (v in worderer.groupedMap.keys) allValues.add(v)
+        allValues.run {
+            for (v in worderer.groupedMap.keys) this.add(v)
+        }
 
         when {
             start !in allValues || stop !in allValues -> {

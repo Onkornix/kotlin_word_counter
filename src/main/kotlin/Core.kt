@@ -1,57 +1,52 @@
-import java.io.BufferedReader
-import java.io.BufferedWriter
 import java.io.File
 
-class WordererCore {
+class WordererCore(private val inputAndOutputPaths: List<String>) {
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
-    private val inputAndOutputPaths = readln().split(' ')
-    private val inputReader = BufferedReader(File(inputAndOutputPaths[0]).reader())
-    private val outputWriter = BufferedWriter(File(inputAndOutputPaths[1]).writer())
+    private val bufInputReader = File(inputAndOutputPaths[0]).bufferedReader(bufferSize = 16384)
+    private val bufOutputWriter = File(inputAndOutputPaths[1]).bufferedWriter()
 
     init {
-        populateUnorderedMap()
+        populateUngroupedMap()
         createGroupedMap()
         writeToOutput()
     }
 
-    private fun populateUnorderedMap() {
-        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\',"<",">")
-        val lineIterator = inputReader.lines().iterator()
-        while (lineIterator.hasNext()) {
-            addToUngroupedMap(lineIterator.next()
-                .lowercase()
-                .filter { it !in specialCharacters }
-                .split(' '))
-        }
-        inputReader.close()
-    }
+    private fun populateUngroupedMap() {
+        val linesIterator = bufInputReader.lines().iterator()
 
-    private fun addToUngroupedMap(line: List<String>) {
-        for (word in line) {
-            if (word.isBlank()) continue
-            if (word in ungroupedMap.keys) {
-                ungroupedMap[word] = (ungroupedMap.getValue(word) + 1)
+        while (linesIterator.hasNext()) {
+            val line = linesIterator
+                .next()
+                .lowercase()
+                .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\',"<",">") }
+                .split(' ')
+
+            for (word in line) {
+                if (word.isBlank()) continue
+                if (word in ungroupedMap.keys) {
+                    ungroupedMap[word] = (ungroupedMap.getValue(word) + 1)
+                }
+                ungroupedMap.putIfAbsent(word, 1)
             }
-            ungroupedMap.putIfAbsent(word, 1)
         }
+        bufInputReader.close()
     }
 
     private fun createGroupedMap() {
-        val valuesThatExist = run {
-            val createValuesThatExist: MutableList<Int> = mutableListOf()
-            for (number in ungroupedMap.values.sorted()) {
-                if (number !in createValuesThatExist) {
-                    createValuesThatExist.add(number)
+        val valuesThatExist: MutableList<Int> = mutableListOf<Int>().run {
+            for (number in ungroupedMap.values.sorted().reversed()) {
+                if (number !in this) {
+                    this.add(number)
                 }
             }
-            createValuesThatExist
+            this
         }
 
-        var currentOccurrenceValue = ungroupedMap.values.max() - 1
+        var currentOccurrenceValue = ungroupedMap.values.min()
         var index = valuesThatExist.size
 
-        while (currentOccurrenceValue >= ungroupedMap.values.min()) {
+        while (currentOccurrenceValue <= ungroupedMap.values.max()) {
             val wordsInGroup: MutableList<String> = mutableListOf()
 
             for (word in ungroupedMap.keys) {
@@ -69,35 +64,37 @@ class WordererCore {
             index--
             currentOccurrenceValue = valuesThatExist[index]
 
-            val forRemoval: MutableList<String> = mutableListOf()
-            for (word in ungroupedMap.keys) {
-                if (ungroupedMap.getValue(word) > currentOccurrenceValue) {
-                    forRemoval.add(word)
+            val forRemoval = mutableListOf<String>().run {
+                for (word in ungroupedMap.keys) {
+                    if (ungroupedMap.getValue(word) < currentOccurrenceValue) {
+                        this.add(word)
+                    }
                 }
+                this
             }
             for (word in forRemoval) {
                 ungroupedMap.remove(word)
             }
         }
+        ungroupedMap.clear()
     }
 
     private fun writeToOutput() {
         if (File(inputAndOutputPaths[1]).exists()) File(inputAndOutputPaths[1]).delete()
         File(inputAndOutputPaths[1]).createNewFile()
 
-        for (occurrence in groupedMap.keys) {
-            outputWriter.write("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
-            outputWriter.newLine()
-            outputWriter.newLine()
-            outputWriter.flush()
+        for (occurrence in groupedMap.keys.reversed()) {
+            //println("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
+            bufOutputWriter.write("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
+            bufOutputWriter.newLine()
+            bufOutputWriter.newLine()
         }
-
-        outputWriter.close()
+        bufOutputWriter.close()
         println("Done!")
     }
 }
 
 fun main() {
     print("complete paths to input and then output files (separated by a space): ")
-    WordererCore()
+    WordererCore(readln().split(' '))
 }
