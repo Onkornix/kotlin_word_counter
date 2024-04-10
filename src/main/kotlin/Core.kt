@@ -3,8 +3,6 @@ import java.io.File
 class WordererCore(private val inputAndOutputPaths: List<String>) {
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
-    private val bufInputReader = File(inputAndOutputPaths[0]).bufferedReader(bufferSize = 16384)
-    private val bufOutputWriter = File(inputAndOutputPaths[1]).bufferedWriter()
 
     init {
         populateUngroupedMap()
@@ -13,13 +11,14 @@ class WordererCore(private val inputAndOutputPaths: List<String>) {
     }
 
     private fun populateUngroupedMap() {
+        val bufInputReader = File(inputAndOutputPaths[0]).bufferedReader(bufferSize = 16384)
         val linesIterator = bufInputReader.lines().iterator()
 
         while (linesIterator.hasNext()) {
             val line = linesIterator
                 .next()
                 .lowercase()
-                .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\',"<",">") }
+                .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\','<','>','`','\'') }
                 .split(' ')
 
             for (word in line) {
@@ -80,14 +79,12 @@ class WordererCore(private val inputAndOutputPaths: List<String>) {
     }
 
     private fun writeToOutput() {
-        if (File(inputAndOutputPaths[1]).exists()) File(inputAndOutputPaths[1]).delete()
-        File(inputAndOutputPaths[1]).createNewFile()
-
+        val bufOutputWriter = File(inputAndOutputPaths[1]).bufferedWriter()
         for (occurrence in groupedMap.keys.reversed()) {
-            //println("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
             bufOutputWriter.write("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
             bufOutputWriter.newLine()
             bufOutputWriter.newLine()
+            bufOutputWriter.flush()
         }
         bufOutputWriter.close()
         println("Done!")
