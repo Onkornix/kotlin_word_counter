@@ -1,5 +1,10 @@
 import java.io.File
 
+fun main() {
+    print("complete paths to input and then output files (separated by a space): ")
+    WordererCore(readln().split(' '))
+}
+
 class WordererCore(private val inputAndOutputPaths: List<String>) {
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
@@ -89,9 +94,4 @@ class WordererCore(private val inputAndOutputPaths: List<String>) {
         bufOutputWriter.close()
         println("Done!")
     }
-}
-
-fun main() {
-    print("complete paths to input and then output files (separated by a space): ")
-    WordererCore(readln().split(' '))
 }
