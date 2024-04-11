@@ -24,7 +24,8 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
         val line = linesIterator
             .next()
             .lowercase()
-            .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\','<','>','`','\'') }
+            .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_',
+                '+','=', ',','.',':',';','?',']','[','}','{','/','\\','<','>','`','\'') }
             .split(' ')
 
         for (word in line) {
