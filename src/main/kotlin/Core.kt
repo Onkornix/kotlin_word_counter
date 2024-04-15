@@ -21,8 +21,7 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
     val ungroupedMap: MutableMap<String, Int> = mutableMapOf()
 
     while (linesIterator.hasNext()) {
-        val line = linesIterator
-            .next()
+        val line = linesIterator.next()
             .lowercase()
             .filter { it !in listOf('!','@','#','$','%','^','&','*','(',')','-','_',
                 '+','=', ',','.',':',';','?',']','[','}','{','/','\\','<','>','`','\'') }
@@ -40,7 +39,7 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
     return ungroupedMap
 }
 fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, List<String>> {
-    val valuesThatExist: MutableList<Int> = mutableListOf<Int>().run {
+    val valuesThatExist = mutableListOf<Int>().run {
         for (number in ungroupedMap.values.sorted().reversed()) {
             if (number !in this) {
                 this.add(number)
