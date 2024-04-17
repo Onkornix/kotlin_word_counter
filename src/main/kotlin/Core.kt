@@ -3,7 +3,7 @@ import java.io.File
 
 fun main() {
     print("complete paths to input and then output files (separated by a space): ")
-    val input = "/home/dylan/Documents/tfotr.txt /home/dylan/Documents/output.txt".split(' ')
+    val input = readln().split(' ')
     val inputFile = File(input[0])
     val outputFile = File(input[1])
 
