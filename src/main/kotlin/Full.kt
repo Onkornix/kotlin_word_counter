@@ -286,9 +286,10 @@ class Interact() {
 fun main() {
     print("Run in interactive mode? [y/n]: ")
     if (readln() == "y") {
-        Interact()
+        val session = Interact()
     } else {
-        WordererFull().writeToOutput()
+        val worderer = WordererFull()
+        worderer.writeToOutput()
     }
 }
 
