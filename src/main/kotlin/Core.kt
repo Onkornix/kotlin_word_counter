@@ -1,10 +1,9 @@
 import java.io.BufferedReader
-import java.io.BufferedWriter
 import java.io.File
 
 fun main() {
     print("complete paths to input and then output files (separated by a space): ")
-    val input = readln().split(' ')
+    val input = "/home/dylan/Documents/tfotr.txt /home/dylan/Documents/output.txt".split(' ')
     val inputFile = File(input[0])
     val outputFile = File(input[1])
 
@@ -12,7 +11,7 @@ fun main() {
     // it makes things more readable in my opinion ...
     val ungroupedMap = populateUngroupedMap(inputFile.bufferedReader())
 
-    /// ... mainly because this function is long and spacious
+    /// ... although mainly because this function is long and spacious
     val groupedMap = createGroupedMap(ungroupedMap)
 
     // Output is not a separate function because it's easier this way
@@ -68,7 +67,8 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
     // using a .run closure because I think it is more clear
     // than declaring the variable and then mutating it later
     val valuesThatExist = mutableListOf<Int>().run {
-        // reversed so grouping begins with the most common word
+        // reversed so grouping begins with the highest occurrence values
+        // a.k.a the least common words (there's always a lot of them)
         for (number in ungroupedMap.values.sorted().reversed()) {
             if (number !in this) {
                 this.add(number)
@@ -77,28 +77,36 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
         this
     }
 
+    // Starting with the least common words so that the huge list of
+    // words that occur once is quickly grouped and then removed from
+    // the ungrouped map for further iteration.
     val groupedMap: MutableMap<Int, List<String>> = mutableMapOf()
     var currentOccurrenceValue = ungroupedMap.values.min()
-    var index = valuesThatExist.size
+    var indexOfCurrentVal = valuesThatExist.size - 1
 
-    while (currentOccurrenceValue <= ungroupedMap.values.max()) {
-        val wordsInGroup: MutableList<String> = mutableListOf()
 
-        for (word in ungroupedMap.keys) {
-            if (currentOccurrenceValue in valuesThatExist
-                && ungroupedMap.getValue(word) == currentOccurrenceValue) {
-                wordsInGroup.add(word)
+    while (indexOfCurrentVal != 0) {
+
+        val group = mutableListOf<String>().run {
+            for (word in ungroupedMap.keys) {
+                if (ungroupedMap.getValue(word) == currentOccurrenceValue) {
+                    this.add(word)
+                }
             }
+            this
         }
 
-        if (wordsInGroup.isNotEmpty()) {
-            groupedMap[currentOccurrenceValue] = wordsInGroup
-        }
+        groupedMap[currentOccurrenceValue] = group
 
-        if (index == 0) break
-        index--
-        currentOccurrenceValue = valuesThatExist[index]
+        // setting the next occurrence value this way avoids setting it
+        // to values that don't exist in the ungrouped map and decreases
+        // time complexity a LOT
+        indexOfCurrentVal--
+        currentOccurrenceValue = valuesThatExist[indexOfCurrentVal]
 
+        // removing words that have already been grouped obviously makes
+        // subsequent iterations way faster. And it doesn't cause concurrent
+        // modification errors or anything which is really chill.
         val forRemoval = mutableListOf<String>().run {
             for (word in ungroupedMap.keys) {
                 if (ungroupedMap.getValue(word) < currentOccurrenceValue) {
@@ -111,6 +119,8 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
             ungroupedMap.remove(word)
         }
     }
+    // I don't really need this since theoretically the removal step would leave
+    // the map completely empty by this point, but it's nice to clean up just in case.
     ungroupedMap.clear()
     return groupedMap
 }
