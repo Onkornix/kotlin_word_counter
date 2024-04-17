@@ -8,10 +8,9 @@ class WordererFull {
     private val ungroupedMap = mutableMapOf<String,Int>()
     val groupedMap = mutableMapOf<Int,MutableList<String>>()
     private var inputAndOutputPaths = listOf<String>()
-    private var inputReader: BufferedReader
-    private var outputWriter: BufferedWriter
-
-    init {
+    private lateinit var inputReader: BufferedReader
+    private lateinit var outputWriter: BufferedWriter
+    fun begin() {
         print("complete paths to input and then output files (separated by a space): ")
 
         inputAndOutputPaths = readln().split(' ')
@@ -24,7 +23,6 @@ class WordererFull {
 
         beginWordering(inputReader)
     }
-
     private fun addToUngroupedMap(line: Iterator<String>) {
         for (word in line) {
             if (word.isBlank()) continue
@@ -116,6 +114,7 @@ class WordererFull {
         outputWriter.close()
         println("Done!")
     }
+
     fun beginWordering(reader: BufferedReader) {
 
         val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
@@ -157,10 +156,9 @@ class WordererFull {
 enum class ArgType {
     HELP, FIND, WORDS, INPUT, WRITE, INDEX, EXIT,
 }
-class Interact() {
+class Interact {
     private val worderer = WordererFull()
-
-    init {
+    fun begin() {
         var interactiveMode = true
 
         while (interactiveMode) {
@@ -287,8 +285,10 @@ fun main() {
     print("Run in interactive mode? [y/n]: ")
     if (readln() == "y") {
         val session = Interact()
+        session.begin()
     } else {
         val worderer = WordererFull()
+        worderer.begin()
         worderer.writeToOutput()
     }
 }
