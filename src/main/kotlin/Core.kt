@@ -14,18 +14,21 @@ fun main() {
     /// ... although mainly because this function is long and spacious
     val groupedMap = createGroupedMap(ungroupedMap)
 
-    // Output is not a separate function because it's easier this way
-    // and the process is so short.
-    // Also, because it's just this and will never be anything but
+    // Output is not a separate function because it's easier this way and the process is so short.
+    // Also, because it is just this, and will never need to be anything but
     val bufOutputWriter = outputFile.bufferedWriter()
     for (occurrence in groupedMap.keys.reversed()) {
-        bufOutputWriter.write("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
+        // i could just put \n in the .write calls but this is probably better.
+        bufOutputWriter.write("$occurrence:")
+        bufOutputWriter.newLine()
+        bufOutputWriter.write(groupedMap.getValue(occurrence).joinToString("\n"))
         bufOutputWriter.newLine()
         bufOutputWriter.newLine()
         bufOutputWriter.flush()
     }
     bufOutputWriter.close()
 
+    // Enjoy!
     println("Done!")
 
 }
@@ -33,9 +36,9 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
     val linesIterator = bufInputReader.lines().iterator()
     val ungroupedMap: MutableMap<String, Int> = mutableMapOf()
 
-    // I'm using an iterator on all the lines of the file (that fill the buffer)
-    // because I felt like it lol.
-    // I could have just used .forEachLine and achieved basically the same result I guess
+    // I'm using an iterator on all the lines of the file because I felt like it lol.
+    // I could have just used .forEachLine and achieved basically the same result I guess.
+    // I suppose this may be a more general approach
     while (linesIterator.hasNext()) {
 
         // exhuming any sense of character from the text :3
@@ -47,6 +50,7 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
 
         for (word in line) {
             if (word.isBlank()) continue
+            // I don't know if `in` or `.contains()` is faster.
             if (word in ungroupedMap.keys) {
                 ungroupedMap.run {
                     // I can assert newValue will not be null because
