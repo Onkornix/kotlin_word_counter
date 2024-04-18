@@ -6,7 +6,7 @@ import java.nio.file.Path
 
 class WordererFull {
     private val ungroupedMap = mutableMapOf<String,Int>()
-    val groupedMap = mutableMapOf<Int,MutableList<String>>()
+    private val groupedMap = mutableMapOf<Int,MutableList<String>>()
     private var inputAndOutputPaths = listOf<String>()
     private lateinit var inputReader: BufferedReader
     private lateinit var outputWriter: BufferedWriter
@@ -21,55 +21,86 @@ class WordererFull {
         inputReader = BufferedReader(File(inputAndOutputPaths[0]).reader())
         outputWriter = BufferedWriter(File(inputAndOutputPaths[1]).writer())
 
-        beginWordering(inputReader)
+        populateUngroupedMap(inputReader)
+        createGroupedMap()
     }
-    private fun addToUngroupedMap(line: Iterator<String>) {
-        for (word in line) {
-            if (word.isBlank()) continue
-            if (word in ungroupedMap.keys) {
-                ungroupedMap[word] = (ungroupedMap.getValue(word) + 1)
+    private fun populateUngroupedMap(reader: BufferedReader) {
+        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
+        val linesIterator = reader.lines().iterator()
+        while (linesIterator.hasNext()) {
+            val line = linesIterator.next()
+                .lowercase()
+                .filter { it !in specialCharacters }
+                .split(' ')
+            for (word in line) {
+                if (word.isBlank()) continue
+                if (word in ungroupedMap.keys) {
+                    ungroupedMap.run {
+                        val newValue = get(word)!! + 1
+                        set(word,newValue)
+                    }
+                }
+                ungroupedMap[word] = 1
             }
-            ungroupedMap.putIfAbsent(word, 1)
         }
+
+    }
+
+    fun giveGroupedMap() : MutableMap<Int, MutableList<String>> {
+        return groupedMap
     }
 
     private fun createGroupedMap() {
-        val valuesThatExist = run {
-            val valuesThatExist: MutableList<Int> = mutableListOf()
-            for (number in ungroupedMap.values.sorted()) {
-                if (number !in valuesThatExist) {
-                    valuesThatExist.add(number)
+        // using a .run closure because I think it is more clear
+        // than declaring the variable and then mutating it later
+        val valuesThatExist = mutableListOf<Int>().run {
+            // reversed so grouping begins with the highest occurrence values
+            // a.k.a the least common words (there's always a lot of them)
+            for (number in ungroupedMap.values.sorted().reversed()) {
+                if (number !in this) {
+                    this.add(number)
                 }
             }
-            valuesThatExist
+            this
         }
 
-        var currentOccurrenceValue = ungroupedMap.values.max() - 1
-        var index = valuesThatExist.size
+        // Starting with the least common words so that the huge list of
+        // words that occur once is quickly grouped and then removed from
+        // the ungrouped map for further iteration.
+        val groupedMap: MutableMap<Int, List<String>> = mutableMapOf()
+        var currentOccurrenceValue = ungroupedMap.values.min()
+        var indexOfCurrentVal = valuesThatExist.size - 1
 
-        while (currentOccurrenceValue >= ungroupedMap.values.min()) {
-            val wordsInGroup: MutableList<String> = mutableListOf()
 
-            for (word in ungroupedMap.keys) {
-                if (currentOccurrenceValue in valuesThatExist
-                    && ungroupedMap.getValue(word) == currentOccurrenceValue) {
-                    wordsInGroup.add(word)
+        while (indexOfCurrentVal != 0) {
+
+            val group = mutableListOf<String>().run {
+                for (word in ungroupedMap.keys) {
+                    if (ungroupedMap.getValue(word) == currentOccurrenceValue) {
+                        this.add(word)
+                    }
                 }
+                this
             }
 
-            if (wordsInGroup.isNotEmpty()) {
-                groupedMap[currentOccurrenceValue] = wordsInGroup
-            }
+            groupedMap[currentOccurrenceValue] = group
 
-            if (index == 0) break
-            index--
-            currentOccurrenceValue = valuesThatExist[index]
+            // setting the next occurrence value this way avoids setting it
+            // to values that don't exist in the ungrouped map and decreases
+            // time complexity a LOT
+            indexOfCurrentVal--
+            currentOccurrenceValue = valuesThatExist[indexOfCurrentVal]
 
-            val forRemoval: MutableList<String> = mutableListOf()
-            for (word in ungroupedMap.keys) {
-                if (ungroupedMap.getValue(word) > currentOccurrenceValue) {
-                    forRemoval.add(word)
+            // removing words that have already been grouped obviously makes
+            // subsequent iterations way faster. And it doesn't cause concurrent
+            // modification errors or anything which is really chill.
+            val forRemoval = mutableListOf<String>().run {
+                for (word in ungroupedMap.keys) {
+                    if (ungroupedMap.getValue(word) < currentOccurrenceValue) {
+                        this.add(word)
+                    }
                 }
+                this
             }
             for (word in forRemoval) {
                 ungroupedMap.remove(word)
@@ -115,20 +146,6 @@ class WordererFull {
         println("Done!")
     }
 
-    fun beginWordering(reader: BufferedReader) {
-
-        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
-        for (line in reader.lines().iterator()) {
-            if (line != null) {
-                addToUngroupedMap(line
-                    .lowercase()
-                    .filter { it !in specialCharacters }
-                    .split(' ')
-                    .iterator())
-            }
-        }
-        createGroupedMap()
-    }
     fun checkInputErrors(inputPath: Path) : Boolean {
         when {
         Files.notExists(inputPath) -> {
@@ -158,6 +175,7 @@ enum class ArgType {
 }
 class Interact {
     private val worderer = WordererFull()
+    private val groupedMap = worderer.giveGroupedMap()
     fun begin() {
         var interactiveMode = true
 
@@ -224,8 +242,8 @@ class Interact {
     }
     private fun find(word: String): String {
 
-        for (occurrence in worderer.groupedMap.keys) {
-            if (word in worderer.groupedMap.getValue(occurrence)) {
+        for (occurrence in groupedMap.keys) {
+            if (word in groupedMap.getValue(occurrence)) {
                 return occurrence.toString()
             } else {
                 continue
@@ -234,9 +252,9 @@ class Interact {
         return "Word not found"
     }
     private fun words(searchValue: Int) : String{
-        for (occurrence in worderer.groupedMap.keys) {
+        for (occurrence in groupedMap.keys) {
             if (occurrence == searchValue) {
-                return worderer.groupedMap.getValue(occurrence).joinToString(", ")
+                return groupedMap.getValue(occurrence).joinToString(", ")
 
             }
         }
@@ -245,7 +263,7 @@ class Interact {
     private fun index(start: Int, stop: Int) {
         val allValues: MutableList<Int> = mutableListOf(0)
         allValues.run {
-            for (v in worderer.groupedMap.keys) this.add(v)
+            for (v in groupedMap.keys) this.add(v)
         }
 
         when {
@@ -258,9 +276,9 @@ class Interact {
             }
         }
 
-        for (occ in worderer.groupedMap.keys) {
-            if (worderer.groupedMap.keys.indexOf(occ) in start..stop) {
-                println("$occ: ${worderer.groupedMap.getValue(occ).joinToString(", ")}")
+        for (occ in groupedMap.keys) {
+            if (groupedMap.keys.indexOf(occ) in start..stop) {
+                println("$occ: ${groupedMap.getValue(occ).joinToString(", ")}")
             }
         }
     }
