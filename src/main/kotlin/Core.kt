@@ -89,7 +89,7 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
     var indexOfCurrentVal = valuesThatExist.size - 1
 
 
-    while (indexOfCurrentVal != 0) {
+    while (true) {
 
         val group = mutableListOf<String>().run {
             for (word in ungroupedMap.keys) {
@@ -105,7 +105,10 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
         // setting the next occurrence value this way avoids setting it
         // to values that don't exist in the ungrouped map and decreases
         // time complexity a LOT
-        indexOfCurrentVal--
+        when (indexOfCurrentVal) {
+            0 -> break
+            else -> indexOfCurrentVal--
+        }
         currentOccurrenceValue = valuesThatExist[indexOfCurrentVal]
 
         // removing words that have already been grouped obviously makes
