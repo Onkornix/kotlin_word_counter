@@ -14,8 +14,11 @@ class WordererFull {
     private var outputWriter: BufferedWriter
     init {
         print("complete paths to input and then output files (separated by a space): ")
-
         inputAndOutputPaths = readln().split(' ')
+        while (inputAndOutputPaths.size < 2) {
+            print("make sure input and output are separated by a space: ")
+            inputAndOutputPaths = readln().split(' ')
+        }
 
         while (!checkInputErrors(Path.of(inputAndOutputPaths[0]))) {
             print("Correct file path: ")
