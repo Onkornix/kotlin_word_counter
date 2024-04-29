@@ -3,7 +3,17 @@ package fullModules
 import java.io.BufferedReader
 import java.io.File
 import java.nio.file.Path
-
+import kotlin.random.Random
+enum class ArgType {
+    HELP,
+    FIND,
+    WORDS,
+    INPUT,
+    WRITE,
+    INDEX,
+    EXIT,
+    RANDOM
+}
 class Interact {
     private val worderer = WordererFull()
     private var groupedMap = worderer.giveGroupedMap()
@@ -34,14 +44,17 @@ class Interact {
                     println("not enough arguments. use `help` to learn syntax")
                     continue
                 }
+
                 command == ArgType.INDEX && args.size < 3 -> {
                     println("not enough arguments. use `help` to learn syntax")
                     continue
                 }
+
                 command == ArgType.INDEX && (args[1].toIntOrNull() == null || args[2].toIntOrNull() == null) -> {
                     println("one or more arguments passed are not numbers. use `help` to learn syntax")
                     continue
                 }
+
                 command == ArgType.WORDS && args[1].toIntOrNull() == null -> {
                     println("argument passed is not a number")
                     continue
@@ -52,10 +65,10 @@ class Interact {
                 ArgType.HELP -> help()
                 ArgType.FIND -> println(find(args[1]))
                 ArgType.WORDS -> println(words(args[1].toInt()))
-                ArgType.INDEX -> index(args[1].toInt() - 1 , args[2].toInt() - 1)
+                ArgType.INDEX -> index(args[1].toInt() - 1, args[2].toInt() - 1)
                 ArgType.INPUT -> input(args[1])
                 ArgType.WRITE -> write()
-                ArgType.RANDOM -> random()
+                ArgType.RANDOM -> random(args[1].toInt())
                 ArgType.EXIT -> interactiveMode = false
             }
         }
@@ -65,6 +78,7 @@ class Interact {
     private fun checkCommand() {
 
     }
+
     private fun help() {
         println(
             "Interactive commands are:\n" +
@@ -74,10 +88,12 @@ class Interact {
                     "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n" +
                     "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
                     "write                    : Writes to output file without exiting interactive mode\n" +
+                    "random [number]          : Randomly prints [number] words and their associated value" +
                     "exit                     : Exits interactive mode and does not write to output file"
         )
 
     }
+
     private fun find(word: String): String {
         for (occurrence in groupedMap.keys) {
             if (word in groupedMap.getValue(occurrence)) {
@@ -88,11 +104,19 @@ class Interact {
         }
         return "Word not found"
     }
-    private fun words(searchValue: Int) : String{
+
+    private fun words(searchValue: Int): String {
         val keys = groupedMap.keys.toList()
         for (occurrence in keys) {
             if (occurrence == searchValue) {
-                return groupedMap.getValue(occurrence).joinToString(", ")
+                val wordsAtSearch = groupedMap.getValue(occurrence)
+                if (wordsAtSearch.size > 100) {
+                    println("You are about to print ${wordsAtSearch.size} words to your terminal. are you sure?\nType 'do it' to proceed: ")
+                    if (readln() == "do it") {
+                        return wordsAtSearch.joinToString(", ")
+                    }
+                }
+                return wordsAtSearch.joinToString(", ")
             }
         }
         /*
@@ -105,16 +129,16 @@ class Interact {
             val mid = (start + end) / 2
 
             if (searchValue > keys.last()) return "No words found \nHighest value is ${keys.last()}"
-            if ((searchValue > keys[start] && searchValue < keys[end]) && end == start + 1){
-                return "No words found \nNeaby values are: ${keys[start]} and ${keys[end]}"
-            }
-            else if (searchValue < keys[mid]) {
+            if ((searchValue > keys[start] && searchValue < keys[end]) && end == start + 1) {
+                return "No words found \nNearby values are: ${keys[start]} and ${keys[end]}"
+            } else if (searchValue < keys[mid]) {
                 end = mid
             } else {
                 start = mid
             }
         }
     }
+
     private fun index(start: Int, stop: Int) {
         val allValues = mutableListOf<Int>().run {
             this.add(0)
@@ -127,6 +151,7 @@ class Interact {
                 println("start or stop index not a valid index (max: ${allValues.size})")
                 return
             }
+
             start > stop -> {
                 println("'start' index cannot be greater than 'stop' index")
             }
@@ -152,9 +177,16 @@ class Interact {
         println("Success!")
     }
 
-    private fun random() {
-
+    private fun random(amount: Int) {
+        return
+//        for (i in 0..amount) {
+//            val valuesThatExist = groupedMap.keys.toList()
+//            val max = valuesThatExist.last()
+//            val min = valuesThatExist[0]
+//            Random.nextInt()
+//        }
     }
+
     private fun write() {
         worderer.writeToOutput()
     }

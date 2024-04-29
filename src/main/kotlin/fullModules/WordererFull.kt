@@ -32,6 +32,7 @@ class WordererFull {
     }
     private fun populateUngroupedMap(reader: BufferedReader) {
         val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
+        //val alphabet = listOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
         val linesIterator = reader.lines().iterator()
         while (linesIterator.hasNext()) {
             val line: List<String> = linesIterator.next()
@@ -51,10 +52,6 @@ class WordererFull {
                 }
             }
         }
-    }
-
-    fun giveGroupedMap() : MutableMap<Int, MutableList<String>> {
-        return groupedMap
     }
 
     private fun createGroupedMap() {
@@ -123,8 +120,6 @@ class WordererFull {
             println("Please enter correct destination.  \n: ")
             inputAndOutputPaths = listOf(inputAndOutputPaths[0], readln())
         }
-        if (File(inputAndOutputPaths[1]).exists()) File(inputAndOutputPaths[1]).delete()
-        File(inputAndOutputPaths[1]).createNewFile()
 
 
         val totalWordCount = run {
@@ -149,7 +144,7 @@ class WordererFull {
         outputWriter.newLine()
         outputWriter.newLine()
 
-        for (occurrence in groupedMap.keys) {
+        for (occurrence in groupedMap.keys.reversed()) {
             outputWriter.write("$occurrence: \n${groupedMap.getValue(occurrence).joinToString("\n")}")
             outputWriter.newLine()
             outputWriter.newLine()
@@ -166,10 +161,12 @@ class WordererFull {
                 println("File does not exist")
                 return false
             }
+
             !Files.isRegularFile(inputPath) -> {
                 println("File is not a regular file")
                 return false
             }
+
             !Files.isReadable(inputPath) -> {
                 println("File is not readable")
                 return false
@@ -181,6 +178,10 @@ class WordererFull {
         populateUngroupedMap(reader)
         createGroupedMap()
     }
+    fun giveGroupedMap() : MutableMap<Int, MutableList<String>> {
+        return groupedMap
+    }
+
     fun reset() {
         ungroupedMap.clear()
         groupedMap.clear()

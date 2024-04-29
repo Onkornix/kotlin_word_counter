@@ -15,7 +15,7 @@ fun main() {
     val groupedMap = createGroupedMap(ungroupedMap)
 
     // Output is not a separate function because it's easier this way and the process is so short.
-    // Also, because i's just this, and will never need to be anything but
+    // Also, because it's just this, and will never need to be anything but
     val bufOutputWriter = outputFile.bufferedWriter()
     for ((occurrence, words) in groupedMap.entries.reversed()) {
         // i could just put \n in the .write calls but this is probably better.
