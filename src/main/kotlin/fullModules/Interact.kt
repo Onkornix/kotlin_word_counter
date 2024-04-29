@@ -75,10 +75,6 @@ class Interact {
         println("bye bye")
     }
 
-    private fun checkCommand() {
-
-    }
-
     private fun help() {
         println(
             "Interactive commands are:\n" +
