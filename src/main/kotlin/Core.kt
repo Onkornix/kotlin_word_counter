@@ -51,6 +51,7 @@ fun populateUngroupedMap(bufInputReader: BufferedReader) : MutableMap<String, In
         for (word in line) {
             if (word.isBlank()) continue
             // I don't know if `in` or `.contains()` is faster.
+            // nvm they are the same operation
             if (word in ungroupedMap.keys) {
                 ungroupedMap.run {
                     // I can assert newValue will not be null because
@@ -92,10 +93,13 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
     while (true) {
 
         val group = mutableListOf<String>().run {
-            for (word in ungroupedMap.keys) {
-                if (ungroupedMap.getValue(word) == currentOccurrenceValue) {
+            // imagine if I could make this even more efficient by somehow iterating with a pair of
+            // key and value and then using the value to compare instead of searching the map every
+            // time to find the value. that would be sick
+            // holy crap
+            for ((word, value) in ungroupedMap.entries) {
+                if (value == currentOccurrenceValue)
                     this.add(word)
-                }
             }
             this
         }
@@ -126,8 +130,8 @@ fun createGroupedMap(ungroupedMap: MutableMap<String, Int>) : MutableMap<Int, Li
             ungroupedMap.remove(word)
         }
     }
-    // I don't really need this since theoretically the removal step would leave
-    // the map completely empty by this point, but it's nice to clean up just in case.
+    // cleaning up
     ungroupedMap.clear()
+
     return groupedMap
 }
