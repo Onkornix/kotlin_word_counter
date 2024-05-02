@@ -5,27 +5,45 @@ import java.io.BufferedWriter
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-
 class WordererFull {
+    private val homeDirectory = System.getProperty("user.home")
+    private val workingDirectory = System.getProperty("user.dir")
+    //private val props = System.getProperties()
+
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
-    private var inputAndOutputPaths = listOf<String>()
-    private var inputReader: BufferedReader
-    private var outputWriter: BufferedWriter
+    private var inputPath = "/dev/null"
+    private var outputPath = "$homeDirectory/Documents/worderer_output.txt"
     init {
-        print("complete paths to input and then output files (separated by a space): ")
-        inputAndOutputPaths = readln().split(' ')
-        while (inputAndOutputPaths.size < 2) {
-            print("make sure input and output are separated by a space: ")
-            inputAndOutputPaths = readln().split(' ')
-        }
+        val inputPrompt =
+            "------------\n" +
+            "Please type out path to the desired input file. \u001B[38;5;39mBy default uses relative path.\u001B[0m\n" +
+            "Prefix with '~/' to use path relative to home directory.\n" +
+            "prefix with '/' to use absolute path\n> "
+        var goodInput = false
+        while (!goodInput) {
+            print(inputPrompt)
+            val input = readln()
 
-        while (!checkInputErrors(Path.of(inputAndOutputPaths[0]))) {
-            print("Correct file path: ")
-            inputAndOutputPaths = listOf(readln(), inputAndOutputPaths[1])
+            inputPath = when(input[0].toString()) {
+                "~/" -> {
+                    "$homeDirectory$input"
+                }
+                "/" -> {
+                    input
+                }
+                else -> {
+                    "$workingDirectory/$input"
+                }
+            }
+
+            if (!checkInputErrors(Path.of(inputPath))) {
+                print(inputPrompt)
+                continue
+            }
+            goodInput = true
         }
-        inputReader = BufferedReader(File(inputAndOutputPaths[0]).reader())
-        outputWriter = BufferedWriter(File(inputAndOutputPaths[1]).writer())
+        val inputReader = BufferedReader(File(inputPath).reader())
 
         populateUngroupedMap(inputReader)
         createGroupedMap()
@@ -114,15 +132,16 @@ class WordererFull {
         }
     }
 
-    fun writeToOutput() {
-        while (true) {
-            println("Output is \u001B[38;5;39m${inputAndOutputPaths[1]}\u001b[0m is that correct? If the file exists it will be overwritten. [y/n]:")
-            while (readln() != "y") {
-                println("Please enter correct destination: ")
-                inputAndOutputPaths = listOf(inputAndOutputPaths[0], readln())
-            }
-            break
+    fun writeToOutput(outputWriter: BufferedWriter) {
+
+        print("Default output is \u001B[38;5;m $outputPath \u001B[0m\n" +
+                "Will be overwritten if it already exists. continue? [y/n]: ")
+
+        if (readln() != "y") {
+            println("Please enter absolute path to output file")
+            outputPath = readln()
         }
+
 
 
 
@@ -162,17 +181,17 @@ class WordererFull {
     fun checkInputErrors(inputPath: Path) : Boolean {
         when {
             Files.notExists(inputPath) -> {
-                println("File does not exist")
+                println("\u001B[38;5;197mERROR\u001B[0m: File does not exist")
                 return false
             }
 
             !Files.isRegularFile(inputPath) -> {
-                println("File is not a regular file")
+                println("\u001B[38;5;197mERROR\u001B[0m: File is not a regular file")
                 return false
             }
 
             !Files.isReadable(inputPath) -> {
-                println("File is not readable")
+                println("\u001B[38;5;197mERROR\u001B[0m: File is not readable")
                 return false
             }
         }
