@@ -4,7 +4,8 @@ import java.io.BufferedReader
 import java.io.File
 import java.nio.file.Path
 import kotlin.random.Random
-enum class ArgType {
+
+enum class Arg {
     HELP,
     FIND,
     WORDS,
@@ -28,48 +29,48 @@ class Interact {
             val args = readln().split(' ')
 
             val command = when (args[0]) {
-                "help" -> ArgType.HELP
-                "find" -> ArgType.FIND
-                "words" -> ArgType.WORDS
-                "input" -> ArgType.INPUT
-                "write" -> ArgType.WRITE
-                "index" -> ArgType.INDEX
-                "random" -> ArgType.RANDOM
-                "exit" -> ArgType.EXIT
-                else -> ArgType.HELP
+                "help" -> Arg.HELP
+                "find" -> Arg.FIND
+                "words" -> Arg.WORDS
+                "input" -> Arg.INPUT
+                "write" -> Arg.WRITE
+                "index" -> Arg.INDEX
+                "random" -> Arg.RANDOM
+                "exit" -> Arg.EXIT
+                else -> Arg.HELP
             }
 
             when {
-                command in listOf(ArgType.FIND, ArgType.WORDS, ArgType.INPUT) && args.size < 2 -> {
+                command in listOf(Arg.FIND, Arg.WORDS, Arg.INPUT) && args.size < 2 -> {
                     println("not enough arguments. use `help` to learn syntax")
                     continue
                 }
 
-                command == ArgType.INDEX && args.size < 3 -> {
+                command == Arg.INDEX && args.size < 3 -> {
                     println("not enough arguments. use `help` to learn syntax")
                     continue
                 }
 
-                command == ArgType.INDEX && (args[1].toIntOrNull() == null || args[2].toIntOrNull() == null) -> {
+                command == Arg.INDEX && (args[1].toIntOrNull() == null || args[2].toIntOrNull() == null) -> {
                     println("one or more arguments passed are not numbers. use `help` to learn syntax")
                     continue
                 }
 
-                command == ArgType.WORDS && args[1].toIntOrNull() == null -> {
+                command == Arg.WORDS && args[1].toIntOrNull() == null -> {
                     println("argument passed is not a number")
                     continue
                 }
             }
 
             when (command) {
-                ArgType.HELP -> help()
-                ArgType.FIND -> println(find(args[1]))
-                ArgType.WORDS -> println(words(args[1].toInt()))
-                ArgType.INDEX -> index(args[1].toInt() - 1, args[2].toInt() - 1)
-                ArgType.INPUT -> input(args[1])
-                ArgType.WRITE -> write()
-                ArgType.RANDOM -> random(args[1].toInt())
-                ArgType.EXIT -> interactiveMode = false
+                Arg.HELP -> help()
+                Arg.FIND -> println(find(args[1]))
+                Arg.WORDS -> println(words(args[1].toInt()))
+                Arg.INDEX -> index(args[1].toInt() - 1, args[2].toInt() - 1)
+                Arg.INPUT -> input(args[1])
+                Arg.WRITE -> write()
+                Arg.RANDOM -> random(args[1].toInt())
+                Arg.EXIT -> interactiveMode = false
             }
         }
         println("bye bye")
@@ -84,7 +85,7 @@ class Interact {
                     "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n" +
                     "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
                     "write                    : Writes to output file without exiting interactive mode\n" +
-                    "random [number]          : Randomly prints [number] words and their associated value" +
+                    "random [number]          : Randomly prints [number] words and their associated value\n" +
                     "exit                     : Exits interactive mode and does not write to output file"
         )
 
@@ -173,14 +174,24 @@ class Interact {
         println("Success!")
     }
 
-    private fun random(amount: Int) {
-        return
-//        for (i in 0..amount) {
-//            val valuesThatExist = groupedMap.keys.toList()
-//            val max = valuesThatExist.last()
-//            val min = valuesThatExist[0]
-//            Random.nextInt()
-//        }
+    private fun random(amount: Int){
+        val randomValues = mutableListOf<Int>()
+        val valuesThatExist = groupedMap.keys.toList()
+        val max = valuesThatExist.size
+
+        for (i in 0..amount) {
+            randomValues.run {
+                val randomIndex = Random.nextInt(until = max)
+                add(valuesThatExist[randomIndex])
+            }
+        }
+        for (groupValue in randomValues) {
+            val maxIndex = groupedMap.getValue(groupValue).size
+            val randomIndex = Random.nextInt(until = maxIndex)
+            val randomWord = groupedMap.getValue(groupValue)[randomIndex]
+
+            println("$randomWord: $groupValue")
+        }
     }
 
     private fun write() {

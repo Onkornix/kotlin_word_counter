@@ -115,11 +115,15 @@ class WordererFull {
     }
 
     fun writeToOutput() {
-        println("Output is \"${inputAndOutputPaths[1]}\" is that correct? If the file exists it will be overwritten.")
-        while (readln() != "y") {
-            println("Please enter correct destination.  \n: ")
-            inputAndOutputPaths = listOf(inputAndOutputPaths[0], readln())
+        while (true) {
+            println("Output is \u001B[38;5;39m${inputAndOutputPaths[1]}\u001b[0m is that correct? If the file exists it will be overwritten. [y/n]:")
+            while (readln() != "y") {
+                println("Please enter correct destination: ")
+                inputAndOutputPaths = listOf(inputAndOutputPaths[0], readln())
+            }
+            break
         }
+
 
 
         val totalWordCount = run {
