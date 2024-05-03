@@ -77,15 +77,15 @@ class Interact {
     private fun help() {
         println(
             "Interactive commands are:\n" +
-                    "help                     : Prints this help\n" +
-                    "find [word]              : Prints given word's occurrence value\n" +
-                    "words [value]            : Prints all words that occur [value] times (warning: may be a lot of words)\n" +
-                    "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n" +
-                    "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
-                    "write                    : Writes to output file without exiting interactive mode\n" +
-                    "random [number]          : Randomly prints [number] words and their associated value\n" +
-                    "randat [value] [number]  : Randomly prints [number] words at [value] occurrence. It may generate duplicates, but they will not be printed\n" +
-                    "exit                     : Exits interactive mode and does not write to output file"
+            "help                     : Prints this help\n" +
+            "find [word]              : Prints given word's occurrence value\n" +
+            "words [value]            : Prints all words that occur [value] times (warning: may be a lot of words)\n" +
+            "index [start] [stop]     : Prints the [start] most common word to the [stop] most common word \n" +
+            "input [path/to/file]     : Runs the program on file given without exiting interactive mode\n" +
+            "write                    : Writes to output file without exiting interactive mode\n" +
+            "random [number]          : Randomly prints [number] words and their associated value\n" +
+            "randat [value] [number]  : Randomly prints [number] words at [value] occurrence. It may generate duplicates, but they will not be printed\n" +
+            "exit                     : Exits interactive mode and does not write to output file"
         )
 
     }
@@ -109,7 +109,8 @@ class Interact {
         }
         val wordsAtSearch = groupedMap.getValue(searchValue)
         if (wordsAtSearch.size > 100) {
-            println("You are about to print \u001B[38;5;197m${wordsAtSearch.size}\u001B[0m words to your terminal. are you sure?\nType 'do it' to proceed: ")
+            println("You are about to print \u001B[38;5;197m${wordsAtSearch.size}\u001B[0m words to your terminal. " +
+                    "are you sure?\nType 'do it' to proceed: ")
             if (readln() == "do it") {
                 if (wordsAtSearch.size > 10000) {
                     println("R.I.P.")
