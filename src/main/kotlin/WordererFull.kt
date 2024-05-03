@@ -1,14 +1,10 @@
-package fullModules
-
 import java.io.BufferedReader
-import java.io.BufferedWriter
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 class WordererFull {
     private val homeDirectory = System.getProperty("user.home")
     private val workingDirectory = System.getProperty("user.dir")
-    //private val props = System.getProperties()
 
     private val ungroupedMap = mutableMapOf<String,Int>()
     private val groupedMap = mutableMapOf<Int,MutableList<String>>()
@@ -16,8 +12,8 @@ class WordererFull {
     private var outputPath = "$homeDirectory/Documents/worderer_output.txt"
     init {
         val inputPrompt =
-            "------------\n" +
-            "Please type out path to the desired input file. \u001B[38;5;39mBy default uses relative path.\u001B[0m\n" +
+            "\n" +
+            "Please type out path to the desired input file. \u001B[38;5;39mUses relative path by default.\u001B[0m\n" +
             "Prefix with '~/' to use path relative to home directory.\n" +
             "prefix with '/' to use absolute path\n> "
         var goodInput = false
@@ -25,11 +21,11 @@ class WordererFull {
             print(inputPrompt)
             val input = readln()
 
-            inputPath = when(input[0].toString()) {
-                "~/" -> {
-                    "$homeDirectory$input"
+            inputPath = when(input[0]) {
+                '~' -> {
+                    "$homeDirectory/${input.removeRange(0,2)}"
                 }
-                "/" -> {
+                '/' -> {
                     input
                 }
                 else -> {
@@ -38,25 +34,23 @@ class WordererFull {
             }
 
             if (!checkInputErrors(Path.of(inputPath))) {
-                print(inputPrompt)
                 continue
             }
             goodInput = true
         }
-        val inputReader = BufferedReader(File(inputPath).reader())
-
-        populateUngroupedMap(inputReader)
+        populateUngroupedMap()
         createGroupedMap()
     }
-    private fun populateUngroupedMap(reader: BufferedReader) {
-        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\')
-        //val alphabet = listOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
+    private fun populateUngroupedMap() {
+        val reader = BufferedReader(File(inputPath).reader())
+        val specialCharacters = listOf('!','@','#','$','%','^','&','*','(',')','-','_','+','=', ',','.',':',';','?',']','[','}','{','/','\\',
+            '\"','<','>')
         val linesIterator = reader.lines().iterator()
         while (linesIterator.hasNext()) {
             val line: List<String> = linesIterator.next()
                 .lowercase()
                 .filter { it !in specialCharacters }
-                .split(' ')
+                .split(' ','—')
 
             for (word in line) {
                 if (word.isBlank()) continue
@@ -132,18 +126,17 @@ class WordererFull {
         }
     }
 
-    fun writeToOutput(outputWriter: BufferedWriter) {
+    fun writeToOutput() {
+        print("Default output is\u001B[38;5;39m $outputPath \u001B[0m.\n" +
+                "It will be overwritten if it already exists. continue? [y/n]: ")
 
-        print("Default output is \u001B[38;5;m $outputPath \u001B[0m\n" +
-                "Will be overwritten if it already exists. continue? [y/n]: ")
-
-        if (readln() != "y") {
-            println("Please enter absolute path to output file")
+        while (readln() != "y") {
+            print("Please enter absolute path to output file\n> ")
             outputPath = readln()
+            print("\nNew output is \u001B[38;5;39m$outputPath\u001B[0m. continue [y/n]: ")
         }
 
-
-
+        val outputWriter = File(outputPath).bufferedWriter()
 
         val totalWordCount = run {
             var count = 0
@@ -181,30 +174,32 @@ class WordererFull {
     fun checkInputErrors(inputPath: Path) : Boolean {
         when {
             Files.notExists(inputPath) -> {
-                println("\u001B[38;5;197mERROR\u001B[0m: File does not exist")
+                println("\u001B[38;5;197mERROR\u001B[0m: File does not exist ($inputPath)")
                 return false
             }
 
             !Files.isRegularFile(inputPath) -> {
-                println("\u001B[38;5;197mERROR\u001B[0m: File is not a regular file")
+                println("\u001B[38;5;197mERROR\u001B[0m: File is not a regular file ($inputPath)")
                 return false
             }
 
             !Files.isReadable(inputPath) -> {
-                println("\u001B[38;5;197mERROR\u001B[0m: File is not readable")
+                println("\u001B[38;5;197mERROR\u001B[0m: File is not readable ($inputPath)")
                 return false
             }
         }
         return true
     }
-    fun beginWordering(reader: BufferedReader) {
-        populateUngroupedMap(reader)
+    fun beginWordering() {
+        populateUngroupedMap()
         createGroupedMap()
+    }
+    fun updateInputPath(newPath: String) {
+        inputPath = newPath
     }
     fun giveGroupedMap() : MutableMap<Int, MutableList<String>> {
         return groupedMap
     }
-
     fun reset() {
         ungroupedMap.clear()
         groupedMap.clear()
